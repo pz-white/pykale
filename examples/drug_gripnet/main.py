@@ -18,10 +18,10 @@ from kale.embed.gripnet import TypicalGripNetEncoder
 
 
 def arg_parse():
-    parser = argparse.ArgumentParser(description="PyTorch CIFAR10 Training")
-    parser.add_argument("--cfg", required=True, help="path to config file", type=str)
-    parser.add_argument("--output", default="default", help="folder to save output", type=str)
-    parser.add_argument("--resume", default="", type=str)
+    parser = argparse.ArgumentParser(description='GripNet Drug Training')
+    parser.add_argument('--cfg', required=True, help='path to config file', type=str)
+    parser.add_argument('--output', default='default', help='folder to save output', type=str)
+    parser.add_argument('--resume', default='', type=str)
     args = parser.parse_args()
     return args
 

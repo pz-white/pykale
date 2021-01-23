@@ -18,7 +18,7 @@ warnings.simplefilter('ignore', SparseEfficiencyWarning)
 
 def arg_parse():
     """Parsing arguments"""
-    parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+    parser = argparse.ArgumentParser(description='SEAL DDI Training')
     parser.add_argument('--cfg', required=True, help='path to config file', type=str)
     parser.add_argument('--output', default='results', help='folder to save output', type=str)
     parser.add_argument('--data_appendix', type=str, default='')
@@ -101,20 +101,20 @@ def main():
     test_loader = DataLoader(test_dataset, batch_size=cfg.DATASET.BATCH_SIZE, num_workers=cfg.DATASET.NUM_WORKERS)
 
     if cfg.DATASET.TRAIN_NODE_EMBEDDING:
-        emb = nn.Embedding(data.num_nodes, cfg.SEAL.HIDDEN_CHANNELS).to(device)
+        embedding = nn.Embedding(data.num_nodes, cfg.SEAL.HIDDEN_CHANNELS).to(device)
     else:
-        emb = None
+        embedding = None
 
     if cfg.SEAL.MODEL == 'SAGE':
         model = SAGE(hidden_channels=cfg.SEAL.HIDDEN_CHANNELS, num_layers=cfg.SEAL.NUM_LAYERS,
-                     max_z=cfg.DATASET.MAX_Z, node_embedding=emb).to(device)
+                     max_z=cfg.DATASET.MAX_Z, node_embedding=embedding).to(device)
     parameters = model.parameters()
     if cfg.DATASET.TRAIN_NODE_EMBEDDING:
-        torch.nn.init.xavier_uniform_(emb.weight)
-        parameters += list(emb.parameters())
+        torch.nn.init.xavier_uniform_(embedding.weight)
+        parameters += list(embedding.parameters())
     optimizer = torch.optim.Adam(params=parameters, lr=cfg.SOLVER.LR)
 
-    trainer = Trainer(cfg, model, emb, train_loader, val_loader, test_loader, device, optimizer, evaluator)
+    trainer = Trainer(cfg, model, embedding, train_loader, val_loader, test_loader, device, optimizer, evaluator)
     if args.resume:
         # Load checkpoint
         print('==> Resuming from checkpoint..')

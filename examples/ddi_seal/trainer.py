@@ -4,7 +4,7 @@ from torch.nn import BCEWithLogitsLoss
 
 
 class Trainer(object):
-    def __init__(self, cfg, model, emb, train_loader, val_loader, test_loader, device, optim, evaluator):
+    def __init__(self, cfg, model, embedding, train_loader, val_loader, test_loader, device, optim, evaluator):
         self.cfg = cfg
         self.model = model
         self.train_loader = train_loader
@@ -12,11 +12,12 @@ class Trainer(object):
         self.test_loader = test_loader
         self.device = device
         self.optim = optim
-        self.emb = emb
+        self.embedding = embedding
         self.evaluator = evaluator
         self.epochs = 1
         self.train_loss, self.val_loss, self.test_loss = [], [], []
         self.hits = []
+        self.major_hit = cfg.SEAL.EVAL[0]
         self.best_val_hits = 0
 
     def train(self):
@@ -33,7 +34,7 @@ class Trainer(object):
         for batch in pbar:
             batch = batch.to(self.device)
             self.optim.zero_grad()
-            node_id = batch.node_id if self.emb else None
+            node_id = batch.node_id if self.embedding else None
             logits = self.model(batch.z, batch.edge_index, batch.batch, node_id)
             loss = BCEWithLogitsLoss()(logits.view(-1), batch.y.to(torch.float))
             loss.backward()
@@ -51,7 +52,7 @@ class Trainer(object):
         val_loss, test_loss = 0, 0
         for batch in tqdm(self.val_loader):
             batch = batch.to(self.device)
-            node_id = batch.node_id if self.emb else None
+            node_id = batch.node_id if self.embedding else None
             logits = self.model(batch.z, batch.edge_index, batch.batch, node_id)
             loss = BCEWithLogitsLoss()(logits.view(-1), batch.y.to(torch.float))
             val_loss += loss.item() * batch.num_graphs
@@ -66,7 +67,7 @@ class Trainer(object):
         y_pred, y_true = [], []
         for batch in tqdm(self.test_loader):
             batch = batch.to(self.device)
-            node_id = batch.node_id if self.emb else None
+            node_id = batch.node_id if self.embedding else None
             logits = self.model(batch.z, batch.edge_index, batch.batch, node_id)
             loss = BCEWithLogitsLoss()(logits.view(-1), batch.y.to(torch.float))
             test_loss += loss.item() * batch.num_graphs
@@ -80,28 +81,29 @@ class Trainer(object):
 
         hits = self.evaluate_hits(pos_val_pred, neg_val_pred, pos_test_pred, neg_test_pred)
         self.hits.append(hits)
-        info_str = 'val Epoch: {:3d}\tval loss: {:0.4f}\tval hit@20: {:0.4f}\ttest loss: {:0.4f}\ttest hit@20: {:0.4f}'\
-            .format(self.epochs, val_loss, hits['Hits@20'][0], test_loss, hits['Hits@20'][1])
+        info_str = 'val Epoch: {:3d}\tval loss: {:0.4f}\tval {}: {:0.4f}\ttest loss: {:0.4f}\ttest {}: {:0.4f}' \
+            .format(self.epochs, val_loss, self.major_hit, hits[self.major_hit][0],
+                    test_loss, self.major_hit, hits[self.major_hit][1])
         print(info_str)
-        if self.best_val_hits < hits['Hits@20'][0]:
+        if self.best_val_hits < hits[self.major_hit][0]:
             self.save_checkpoint('best')
         self.save_checkpoint('latest')
 
-
     def evaluate_hits(self, pos_val_pred, neg_val_pred, pos_test_pred, neg_test_pred):
         results = {'epoch': self.epochs}
-        for K in [20, 50, 100]:
-            self.evaluator.K = K
+        for hit in self.cfg.SEAL.EVAL:
+            k = int(hit.replace("hits@", ""))
+            self.evaluator.K = k
             valid_hits = self.evaluator.eval({
                 'y_pred_pos': pos_val_pred,
                 'y_pred_neg': neg_val_pred,
-            })[f'hits@{K}']
+            })[hit]
             test_hits = self.evaluator.eval({
                 'y_pred_pos': pos_test_pred,
                 'y_pred_neg': neg_test_pred,
-            })[f'hits@{K}']
+            })[hit]
 
-            results[f'Hits@{K}'] = (valid_hits, test_hits)
+            results[hit] = (valid_hits, test_hits)
 
         return results
 

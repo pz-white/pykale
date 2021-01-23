@@ -22,9 +22,9 @@ class HGTConv(MessagePassing):
         n_heads: the number of attention heads (required).
         dropout: dropout rate (default=0.2)
         use_norm: whether to use normalization (default=True).
-        use_rte: whether to use relative temporal encoding (default=True).
+        use_rel_temporal: whether to use relative temporal encoding (default=True).
     """
-    def __init__(self, in_dim, out_dim, num_types, num_relations, n_heads, dropout=0.2, use_norm=True, use_rte=True,
+    def __init__(self, in_dim, out_dim, num_types, num_relations, n_heads, dropout=0.2, use_norm=True, use_rel_temporal=True,
                  **kwargs):
         super(HGTConv, self).__init__(node_dim=0, aggr='add', **kwargs)
 
@@ -37,8 +37,7 @@ class HGTConv(MessagePassing):
         self.d_k = out_dim // n_heads
         self.sqrt_dk = math.sqrt(self.d_k)
         self.use_norm = use_norm
-        self.use_RTE = use_rte
-        self.att = None
+        self.use_RTE = use_rel_temporal
 
         self.k_linears = nn.ModuleList()
         self.q_linears = nn.ModuleList()
@@ -114,8 +113,8 @@ class HGTConv(MessagePassing):
                     '''
                     v_mat = v_linear(source_node_vec).view(-1, self.n_heads, self.d_k)
                     res_msg[idx] = torch.bmm(v_mat.transpose(1, 0), self.relation_msg[relation_type]).transpose(1, 0)
-        self.att = softmax(res_att, edge_index_i)
-        res = res_msg * self.att.view(-1, self.n_heads, 1)
+        attention = softmax(res_att, edge_index_i)
+        res = res_msg * attention.view(-1, self.n_heads, 1)
         del res_att, res_msg
         return res.view(-1, self.out_dim)
 

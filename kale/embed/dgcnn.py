@@ -48,8 +48,8 @@ class DGCNN(nn.Module):
                             conv1d_kws[1], 1)
         dense_dim = int((self.k - 2) / 2 + 1)
         dense_dim = (dense_dim - conv1d_kws[1] + 1) * conv1d_channels[1]
-        self.lin1 = Linear(dense_dim, 128)
-        self.lin2 = Linear(128, 1)
+        self.linear_1 = Linear(dense_dim, 128)
+        self.linear_2 = Linear(128, 1)
 
     def forward(self, node_label_index, edge_index, node_batch_index, edge_weight=None, node_id=None):
         """
@@ -62,8 +62,8 @@ class DGCNN(nn.Module):
         """
         x = self.z_embedding(node_label_index)
         if self.node_embedding is not None and node_id is not None:
-            n_emb = self.node_embedding(node_id)
-            x = torch.cat([x, n_emb], 1)
+            n_embedding = self.node_embedding(node_id)
+            x = torch.cat([x, n_embedding], 1)
         xs = [x]
 
         for conv in self.convs:
@@ -79,7 +79,7 @@ class DGCNN(nn.Module):
         x = x.view(x.size(0), -1)  # [num_graphs, dense_dim]
 
         # MLP.
-        x = F.relu(self.lin1(x))
+        x = F.relu(self.linear_1(x))
         x = F.dropout(x, p=0.5, training=self.training)
-        x = self.lin2(x)
+        x = self.linear_2(x)
         return x

@@ -47,17 +47,17 @@ class SEALDataset(InMemoryDataset):
             edge_weight = self.data.edge_weight.view(-1)
         else:
             edge_weight = torch.ones(self.data.edge_index.size(1), dtype=int)
-        A = ssp.csr_matrix(
+        adjacent_mat = ssp.csr_matrix(
             (edge_weight, (self.data.edge_index[0], self.data.edge_index[1])),
             shape=(self.data.num_nodes, self.data.num_nodes)
         )
 
         # Extract enclosing subgraphs for pos and neg edges
         pos_list = extract_enclosing_subgraphs(
-            pos_edge, A, self.data.x, 1, self.num_hops,
+            pos_edge, adjacent_mat, self.data.x, 1, self.num_hops,
             self.node_label, self.ratio_per_hop, self.max_nodes_per_hop)
         neg_list = extract_enclosing_subgraphs(
-            neg_edge, A, self.data.x, 0, self.num_hops,
+            neg_edge, adjacent_mat, self.data.x, 0, self.num_hops,
             self.node_label, self.ratio_per_hop, self.max_nodes_per_hop)
 
         torch.save(self.collate(pos_list + neg_list), self.processed_paths[0])
