@@ -9,7 +9,7 @@ baseline in open BindingDB datasets. BindingDB is a public, web-accessible datab
 DeepDTA is the modeling of protein sequences and compound 1D 
 representations with convolutional neural networks (CNNs). The whole architecture of DeepDTA is shown below.
 
-![DeepDTA](deepdta.PNG)
+![DeepDTA](deepdta.png)
 
 ### 3. Datasets
 We introduce **three datasets** from BindingDB distinguished with different affinity measurement metrics 
@@ -32,6 +32,12 @@ pip install PyTDC
 ```
 
 ### Usage
-`python main.py`
+Run model for BindingDB datasets with IC50, Kd and Ki metrics respectively.
+```
+python main.py --cfg configs/IC50-DeepDTA.yaml
+python main.py --cfg configs/Kd-DeepDTA.yaml
+python main.py --cfg configs/Ki-DeepDTA.yaml
+```
+
 
 ### Architecture

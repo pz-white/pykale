@@ -1,11 +1,11 @@
 import torch
 from tdc.multi_pred import DTI
 from kale.utils.chemchar_label import label_isosmile, label_prot
-from torch.utils.data import Dataset, DataLoader
+from torch.utils.data import Dataset
 
 
 class DTIDeepDataset(Dataset):
-    def __init__(self, dataset="DAVIS", split="train", transform=None, y_log=True):
+    def __init__(self, dataset, split="train", transform=None, y_log=True):
         self.data = DTI(name=dataset)
         if y_log:
             self.data.convert_to_log()
@@ -23,10 +23,3 @@ class DTIDeepDataset(Dataset):
         xt = torch.LongTensor(label_prot(self.prot_sequence[idx]))
         y = torch.Tensor([self.y[idx]])
         return xd, xt, y
-
-
-if __name__ == "__main__":
-    train_dataset = DTIDeepDataset()
-    train_loader = DataLoader(dataset=train_dataset, shuffle=True, batch_size=128)
-    for batch in train_loader:
-        break
