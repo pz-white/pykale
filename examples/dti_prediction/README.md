@@ -9,7 +9,7 @@ baseline in open BindingDB datasets. BindingDB is a public, web-accessible datab
 DeepDTA is the modeling of protein sequences and compound 1D 
 representations with convolutional neural networks (CNNs). The whole architecture of DeepDTA is shown below.
 
-![DeepDTA](deepdta.png)
+![DeepDTA](figures/deepdta.png)
 
 ### 3. Datasets
 We introduce **three datasets** from BindingDB distinguished with different affinity measurement metrics 
@@ -21,7 +21,7 @@ for IC50, and 375,032/174,662/3,070 for Ki.
 
 This figure is the binding affinity distribution for the three datasets respectively, and the metrics values have been transformed into
 log space.
-![Binding affinity distribution](bindingdb.jpg)
+![Binding affinity distribution](figures/bindingdb.jpg)
 
 ### Requirements
 You'll need to install the external TDC and RDKit packages for running the example codes.
