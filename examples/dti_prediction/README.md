@@ -19,6 +19,19 @@ tasks spread across different domains of therapeutics.
 **Dataset statistics** (# of DTI pairs, # of drugs, # of proteins): 52,284/10,665/1,413 for Kd, 991,486/549,205/5,078 
 for IC50, and 375,032/174,662/3,070 for Ki.
 
-This figure is the binding affinity distribution for the three datasets respectively, the values have been transformed into
-log space with equation
+This figure is the binding affinity distribution for the three datasets respectively, and the metrics values have been transformed into
+log space.
 ![Binding affinity distribution](bindingdb.jpg)
+
+### Requirements
+You'll need to install the external TDC and RDKit packages for running the example codes.
+
+```
+conda install -c conda-forge rdkit
+pip install PyTDC
+```
+
+### Usage
+`python main.py`
+
+### Architecture
